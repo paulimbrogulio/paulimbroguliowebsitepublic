@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Cat Project — Paul Imbrogulio</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cpath%20d%3D%22M4%2016%2016%206l12%2010M8%2014v12h16V14%22%20fill%3D%22none%22%20stroke%3D%22%2333604D%22%20stroke-width%3D%222%22%2F%3E%3C%2Fsvg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,600&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site">
+  <div class="site-bar">
+    <a class="wordmark" href="index.html">Paul Imbrogulio</a>
+    <nav class="site-nav">
+      <a href="index.html">Home</a>
+      <a href="letters.html">Letters</a>
+      <a href="games.html">Games</a>
+      <a href="cats.html" aria-current="page">Cats</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="page-head">
+    <span class="eyebrow">The Cat Project</span>
+    <h1>Where are Bean and Toffee?</h1>
+    <p>Every answer here comes from a model trained on a few hundred real sightings, logged by hand over several months. It's a guess with numbers attached — not a camera, not a tracker.</p>
+  </div>
+
+  <div class="cats-layout">
+
+    <section aria-label="Ask about the cats">
+      <span class="panel-label">Ask a question</span>
+
+      <div class="chip-row" id="presetChips"></div>
+
+      <form class="ask-form" id="askForm">
+        <label class="visually-hidden" for="askInput">Ask about the cats</label>
+        <input id="askInput" type="text" autocomplete="off"
+               placeholder="or type your own — e.g. where will Toffee be at 9pm Friday?">
+        <button type="submit">Ask</button>
+      </form>
+
+      <div class="answer-panel" id="answerPanel" aria-live="polite"></div>
+    </section>
+
+    <section aria-label="Where the cats probably are now">
+      <span class="panel-label">Best guess right now</span>
+      <div class="floorplan-frame">
+        <!-- Traced from the real layout. Rooms down the right, hallway down
+             the left, living room across the bottom. The kitchen table and the
+             couch are furniture *inside* the living room — there is no kitchen
+             room — which is why the kitchen table and "On a lap" are drawn here
+             rather than as rooms of their own. Coordinates are mirrored by
+             BUCKET_POINTS in js/cats.js; move a rect, move the point. -->
+        <svg id="floorplan" viewBox="0 0 300 470" role="img"
+             aria-label="Floor plan of the apartment showing each cat's most likely location right now">
+
+          <!-- Hallway: unlabelled and faint. It orients the reader without
+               competing with the rooms the cats are actually logged in. -->
+          <rect class="room-rect hallway" x="8" y="8" width="106" height="296"/>
+
+          <rect class="room-rect" x="114" y="8" width="178" height="130"/>
+          <text class="room-label" x="120" y="22">Bedroom</text>
+          <rect class="furn" x="140" y="21" width="68" height="93"/>
+          <text class="furn-label" x="174" y="70">Bed</text>
+          <rect class="furn" x="271" y="79" width="21" height="59"/>
+          <text class="furn-label" x="281" y="108" transform="rotate(90 281 108)">Closet</text>
+
+          <rect class="room-rect" x="114" y="138" width="178" height="46"/>
+          <text class="room-label" x="180" y="152">Bathroom</text>
+          <rect class="furn" x="114" y="138" width="58" height="25"/>
+          <text class="furn-label" x="143" y="151">Closet</text>
+
+          <rect class="room-rect" x="114" y="184" width="178" height="120"/>
+          <text class="room-label" x="120" y="198">Office</text>
+          <rect class="furn" x="120" y="205" width="25" height="69"/>
+          <text class="furn-label" x="132" y="240" transform="rotate(90 132 240)">Closet</text>
+          <rect class="furn" x="152" y="205" width="63" height="18"/>
+          <text class="furn-label" x="183" y="215">Sarah Desk</text>
+          <rect class="furn" x="232" y="205" width="55" height="18"/>
+          <text class="furn-label" x="259" y="215">Dresser</text>
+          <rect class="furn" x="254" y="232" width="33" height="60"/>
+          <text class="furn-label" x="270" y="262" transform="rotate(90 270 262)">Paul Desk</text>
+          <!-- The climbing wall. Went up ~19 Jul 2026 and is now the single
+               most-used spot in the house, so it earns its full name here —
+               "Wall" alone reads as a structural wall. -->
+          <rect class="furn" x="120" y="280" width="46" height="24"/>
+          <text class="furn-label" x="143" y="294">Climb Wall</text>
+
+          <rect class="room-rect" x="8" y="304" width="284" height="158"/>
+          <text class="room-label" x="14" y="318">Living Room</text>
+          <rect class="furn" x="16" y="397" width="36" height="44"/>
+          <text class="furn-label" x="34" y="421">Cat Tree</text>
+          <rect class="furn" x="124" y="340" width="49" height="107"/>
+          <text class="furn-label" x="148" y="360">Couch</text>
+          <!-- The two lap spots, drawn inside the couch as in the sketch. This
+               is where the "On a lap" dot lands — without these the couch looks
+               like plain furniture and the lap bucket has no visible home. -->
+          <rect class="furn" x="130" y="370" width="37" height="20"/>
+          <rect class="furn" x="130" y="414" width="37" height="20"/>
+          <rect class="furn" x="189" y="340" width="41" height="107"/>
+          <text class="furn-label" x="209" y="360">Table</text>
+          <rect class="furn" x="245" y="312" width="38" height="27"/>
+          <text class="furn-label" x="264" y="328">Box</text>
+          <rect class="furn" x="258" y="352" width="26" height="58"/>
+          <text class="furn-label" x="271" y="381" transform="rotate(90 271 381)">Floating</text>
+
+          <g id="catsLayer"></g>
+        </svg>
+      </div>
+      <p class="cat-status" id="catStatus"></p>
+
+      <details class="method">
+        <summary>How this works</summary>
+        <p>Each sighting was logged with a timestamp and a spot — which side of the bed, whose desk, whose lap. The answer splits on one thing only: day or night. Within each half it's the frequency of what's actually been logged, so 10am and 4pm give the same answer, and so do 9pm and 3am.</p>
+        <p>That's deliberate, and it replaced a random forest that read the clock more finely. Tested properly — trained on the past, scored on what happened next — knowing the exact hour of the afternoon made the predictions <em>worse</em>, not better. Where these two settle during the day turns out not to be a function of the clock, or at least not one a few hundred sightings can demonstrate. Night versus day is a real difference. Two o'clock versus five isn't.</p>
+        <p>Recent sightings count for more than old ones, on a thirty-day half-life. That matters more than it sounds: a climbing wall went up in the office in July and promptly became the most popular spot in the house, so sightings from the spring describe a home that no longer quite exists.</p>
+        <p>The ~20 specific spots are grouped into rooms so the map stays readable, with the most likely exact spot shown as the smaller tag. Percentages are the model's confidence.</p>
+        <p id="accuracyNote"></p>
+        <p class="data-meta" id="dataMeta"></p>
+      </details>
+    </section>
+
+  </div>
+</main>
+
+<footer class="site">
+  <div class="wrap">Paul Imbrogulio · Updated 2026</div>
+</footer>
+
+<script src="js/cat-data.js"></script>
+<script src="js/cats.js"></script>
+</body>
+</html>
