@@ -172,31 +172,44 @@ updated the spreadsheet by hand — `refresh.py` just calls it for you.)*
 
 ## 3. Edit the content
 
-`letters.html` and `games.html` are still placeholder text. Open either
-one in a browser and you'll see dashed pink boxes marking exactly what to
-replace and where — you don't have to read the HTML to find them.
-
-Those boxes come from one word: `drafting`, in the `<body class="drafting">`
-tag near the top of each file. **Delete just that word and every marker on
-the page disappears at once.** They're hidden by default, so if you forget
-to remove the boxes themselves nothing leaks onto the live site — but do
-delete `drafting` before you upload, or visitors will see the notes.
+All four pages hold real content. Here's how to add to the two that grow.
 
 **Christmas letters** — open `letters.html`. Each year is one `<details>`
-block. Copy an existing block to add a new year and replace the
-placeholder paragraph with your real letter. Newest year stays on top.
+block. Copy the whole block, paste it at the top, change the year, and put
+each paragraph of the letter in its own `<p>…</p>`. Only the newest block
+should have `open` on it — that's what makes it start expanded.
 
-**Games** — open `games.html`. Each game is one `.game-card` block. Copy
-one per game and replace `REPLACE_WITH_YOUR_FOLDER_ID` in the link with
-your real Google Drive (or Dropbox) share link. Set the folder's sharing
-to **Anyone with the link → Viewer** or people won't be able to open it —
-Viewer lets them download, which is all they need. Don't use Editor here
-either; it would let any visitor delete the files.
+This page carries `<meta name="robots" content="noindex">`, which keeps the
+letters out of Google. They're still readable by anyone you send the link
+to; they just won't turn up when someone searches a friend's name. Leave it
+in place unless you decide otherwise.
+
+**Games** — open `games.html`. Each game is one `.game-card` block. Copy one
+per game, then replace the tag, the title, the description, and the Google
+Drive (or Dropbox) share link. The grid reflows on its own — you don't need
+to touch any layout to fit a third or a tenth.
+
+Set each folder's sharing to **Anyone with the link → Viewer** or people
+won't be able to open it — Viewer lets them download, which is all they
+need. Don't use Editor; it would let any visitor delete the files.
+
+**A note on the dashed pink boxes**, if you ever see one: the CSS for them
+is still here. Any `<div class="slot">…</div>` becomes a visible "replace
+this" marker, but only on a page whose `<body>` has `class="drafting"`.
+They're hidden by default, so an editing note can't leak onto the live site
+by accident — but if you use them, delete `drafting` before you upload.
 
 **Cats** — most of this page is driven by the data file, so there's less
 to hand-edit. In `js/cats.js`:
 - `PRESETS` — the quick-question chips.
-- `BUCKET_POINTS` — where each room's dot sits on the floor plan.
+- `SPOT_POINTS` — where each *specific spot* dot sits on the floor plan (the
+  climbing wall, Paul's desk, each side of the bed). This is the one to edit
+  if a dot looks like it's in the wrong place.
+- `BUCKET_POINTS` — one fallback position per room, used only when a spot
+  isn't listed in `SPOT_POINTS`.
+
+Both sets of coordinates are read off the shapes drawn in `cats.html`. If you
+move a piece of furniture there, move its point here too.
 The room names, spot tags, percentages, and accuracy note all come from
 `js/cat-data.js` and update themselves when you re-export.
 
@@ -245,38 +258,52 @@ undo, which is the whole reason git is the main route.
 
 </details>
 
-## 5. Point your Squarespace domain at it
+## 5. Point your domain at it
 
-Your Squarespace site on `paulimbrogulio.com` stays live. The new site
-goes on the **subdomain `cats.paulimbrogulio.com`**, so the root domain is
-never touched.
+This site takes over `www.paulimbrogulio.com` **and** the bare
+`paulimbrogulio.com`, which means it **replaces** the Squarespace site
+rather than sitting beside it. Save anything you want off Squarespace
+first. Keep paying for the domain registration even if you cancel the
+website plan — that's the part you can't get back.
 
 1. GitHub → repo → **Settings → Pages → Custom domain** → enter
-   `cats.paulimbrogulio.com` → Save. A `CNAME` file holding that name is
+   `www.paulimbrogulio.com` → Save. A `CNAME` file holding that name is
    already committed, so the box may be filled in for you. Either way, leave
    the file alone.
 
    One side effect to expect: because that file is already there, the
-   temporary `github.io` address may redirect to `cats.paulimbrogulio.com`
-   before the DNS record below exists, which looks like a broken site and
+   temporary `github.io` address may redirect to `www.paulimbrogulio.com`
+   before the DNS records below exist, which looks like a broken site and
    isn't. `DEPLOY.txt` PART 4 explains how to check the pages in the
    meantime.
 2. Squarespace → **Settings → Domains** → `paulimbrogulio.com` → **DNS
-   Settings** → **Custom Records** → add one record:
+   Settings**. Delete the whole **Squarespace Defaults** preset first (red
+   bin icon on that box — its rows can't be removed individually, and a new
+   `@` A record is rejected while they exist), plus the old `cats` custom
+   record. Leave *Domain Connect*, *Email Security* and any MX records
+   alone. Then, under **Custom records**, add:
 
-   | Host | Type | Data |
+   | Name | Type | Data |
    |---|---|---|
-   | `cats` | CNAME | `<username>.github.io` |
+   | `@` | A | `185.199.108.153` |
+   | `@` | A | `185.199.109.153` |
+   | `@` | A | `185.199.110.153` |
+   | `@` | A | `185.199.111.153` |
+   | `www` | CNAME | `<username>.github.io` |
 
-   `<username>` is your **GitHub username**, not the domain, and there is
-   no repo name and no `https://` — just `something.github.io`. That is
-   the step people get wrong.
+   Four A records sharing one name is correct — they're GitHub's four
+   servers. `<username>` is your **GitHub username**, not the domain, and
+   there is no repo name and no `https://` — just `something.github.io`.
+   That is the step people get wrong.
 
-   **Do not change the nameservers, and do not touch the root `@`
-   records.** Those are what keep your Squarespace site working.
+   **Still don't change the nameservers**, and leave any MX (email) and
+   TXT (verification) records alone.
 3. Wait for DNS — usually minutes, occasionally a few hours. Then return
    to GitHub → Settings → Pages and tick **Enforce HTTPS** once the
    certificate has been issued (the checkbox is greyed out until then).
+
+The cat page is now `www.paulimbrogulio.com/cats.html` — a page on the
+site, reachable from the nav, not an address of its own.
 
 **Updating later:** edit the file, go to it in the GitHub repo, click the
 pencil icon, paste, commit. Or use *Add file → Upload files* to replace

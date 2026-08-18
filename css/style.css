@@ -239,10 +239,17 @@ details.letter[open] .letter-toggle { transform: rotate(45deg); }
    ========================================================================== */
 .games-grid {
   max-width: var(--max-wide);
+  /* The side gutter has to sit OUTSIDE the border, not as padding: this
+     element's background IS the hairline between cards, so padding paints a
+     thick beige bar down each edge. width caps at 100% - gutter on narrow
+     screens; max-width takes over once there's room. */
+  width: calc(100% - 3rem);
   margin: 0 auto;
-  padding: 0 1.5rem;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(15.5rem, 1fr));
+  /* auto-FIT, not auto-fill. The grid paints --line behind a 1px gap, so an
+     empty track isn't invisible here — it renders as a solid beige block
+     beside the real cards. auto-fit collapses it; the cards share the width. */
+  grid-template-columns: repeat(auto-fit, minmax(15.5rem, 1fr));
   gap: 1px;
   background: var(--line);
   border: 1px solid var(--line);
