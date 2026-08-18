@@ -55,7 +55,9 @@
              couch are furniture *inside* the living room — there is no kitchen
              room — which is why the kitchen table and "On a lap" are drawn here
              rather than as rooms of their own. Coordinates are mirrored by
-             BUCKET_POINTS in js/cats.js; move a rect, move the point. -->
+             SPOT_POINTS (one entry per furniture shape, which is what the dots
+             actually use) and BUCKET_POINTS (room centroids, the fallback) in
+             js/cats.js; move a rect, move both. -->
         <svg id="floorplan" viewBox="0 0 300 470" role="img"
              aria-label="Floor plan of the apartment showing each cat's most likely location right now">
 
@@ -64,7 +66,11 @@
           <rect class="room-rect hallway" x="8" y="8" width="106" height="296"/>
 
           <rect class="room-rect" x="114" y="8" width="178" height="130"/>
-          <text class="room-label" x="120" y="22">Bedroom</text>
+          <!-- x=214, not the x=120 the other rooms use: the bed starts at
+               x=140 and the word is ~41 units wide, so from the left edge it
+               lands on the bed's top corner. This is the same dodge Bathroom
+               already makes below to clear its closet. -->
+          <text class="room-label" x="214" y="22">Bedroom</text>
           <rect class="furn" x="140" y="21" width="68" height="93"/>
           <text class="furn-label" x="174" y="70">Bed</text>
           <rect class="furn" x="271" y="79" width="21" height="59"/>
@@ -97,11 +103,15 @@
           <text class="furn-label" x="34" y="421">Cat Tree</text>
           <rect class="furn" x="124" y="340" width="49" height="107"/>
           <text class="furn-label" x="148" y="360">Couch</text>
-          <!-- The two lap spots, drawn inside the couch as in the sketch. This
-               is where the "On a lap" dot lands — without these the couch looks
-               like plain furniture and the lap bucket has no visible home. -->
+          <!-- The two lap spots, drawn inside the couch as in the sketch — one
+               cushion each, so "Paul's lap" and "Sarah's lap" are separate
+               targets rather than one anonymous "On a lap" blob. Paul takes the
+               upper cushion, Sarah the lower; SPOT_POINTS in js/cats.js must
+               agree with that choice. -->
           <rect class="furn" x="130" y="370" width="37" height="20"/>
+          <text class="furn-label" x="148" y="383">Paul</text>
           <rect class="furn" x="130" y="414" width="37" height="20"/>
+          <text class="furn-label" x="148" y="427">Sarah</text>
           <rect class="furn" x="189" y="340" width="41" height="107"/>
           <text class="furn-label" x="209" y="360">Table</text>
           <rect class="furn" x="245" y="312" width="38" height="27"/>
@@ -118,7 +128,7 @@
         <summary>How this works</summary>
         <p>Each sighting was logged with a timestamp and a spot — which side of the bed, whose desk, whose lap. The answer splits on one thing only: day or night. Within each half it's the frequency of what's actually been logged, so 10am and 4pm give the same answer, and so do 9pm and 3am.</p>
         <p>That's deliberate, and it replaced a random forest that read the clock more finely. Tested properly — trained on the past, scored on what happened next — knowing the exact hour of the afternoon made the predictions <em>worse</em>, not better. Where these two settle during the day turns out not to be a function of the clock, or at least not one a few hundred sightings can demonstrate. Night versus day is a real difference. Two o'clock versus five isn't.</p>
-        <p>Recent sightings count for more than old ones, on a thirty-day half-life. That matters more than it sounds: a climbing wall went up in the office in July and promptly became the most popular spot in the house, so sightings from the spring describe a home that no longer quite exists.</p>
+        <p>Recent sightings count for more than old ones, on a ninety-day half-life. That matters more than it sounds: a climbing wall went up in the office in July and promptly became the most popular spot in the house, so sightings from the spring describe a home that no longer quite exists. Ninety days is a deliberately gentle setting — it keeps the answers steady rather than letting a handful of new sightings rewrite the page, at the cost of taking a few weeks to notice when the cats genuinely change their minds.</p>
         <p>The ~20 specific spots are grouped into rooms so the map stays readable, with the most likely exact spot shown as the smaller tag. Percentages are the model's confidence.</p>
         <p id="accuracyNote"></p>
         <p class="data-meta" id="dataMeta"></p>

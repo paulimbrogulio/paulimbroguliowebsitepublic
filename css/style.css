@@ -594,10 +594,10 @@ details.letter[open] .letter-toggle { transform: rotate(45deg); }
    1. An input under 16px makes iOS Safari zoom the page on focus and never
       zoom back out. 16px exactly is the threshold.
    2. Nav links and chips were ~15px and ~24px tall — well under a fingertip.
-   3. Furniture labels are 5.5px in a 300-unit viewBox; at phone width the SVG
-      renders near 1:1, so they turn to fuzz. The rooms and outlines stay, and
-      nothing is lost because the status line under the map already names the
-      exact spot in words.
+   3. Furniture labels are 5.5px in a 300-unit viewBox, and at phone width the
+      SVG used to render near 1:1, so they turned to fuzz. They were hidden
+      outright; that was the wrong fix, because an unlabelled bed and an
+      unlabelled couch cushion are just grey boxes. See the 520px block.
    4. Long room names in the answer rows need the extra width back. */
 @media (max-width: 620px) {
   .ask-form input { font-size: 16px; }
@@ -618,5 +618,16 @@ details.letter[open] .letter-toggle { transform: rotate(45deg); }
 }
 
 @media (max-width: 520px) {
-  .furn-label { display: none; }
+  /* The furniture labels used to be display:none here. The real problem was
+     never the type size — it was that 88px of a 390px phone went to padding
+     (1.5rem a side on .cats-layout, 1.25rem a side on the frame), leaving the
+     SVG at exactly 300px against a 300-unit viewBox. Reclaiming most of that
+     takes it to 337px, and with the bump below the labels land at an effective
+     7.3px, i.e. bigger than they render on desktop.
+
+     6.5px is a measured ceiling, not a taste call: at 7px "Climb Wall" is 45.3
+     units wide inside a 46-unit rect and spills. Re-measure before raising it. */
+  .cats-layout { padding: 0 1rem; }
+  .floorplan-frame { padding: 0.6rem; }
+  .furn-label { font-size: 6.5px; }
 }

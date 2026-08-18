@@ -23,12 +23,11 @@
 const D = window.CAT_DATA;
 const CAT_NAMES = ["Bean", "Toffee"];
 
-/* Where each bucket's dot sits in the floor-plan SVG (viewBox 0 0 300 470).
-   The plan is traced from the real house, so these land on the thing they name
-   rather than on a room centroid: Bedroom sits on the bed, "On a lap" sits on
-   the couch. "On a lap" is the one bucket that isn't a room — it's the
-   living-room couch, kept separate because "which room" and "on a person" are
-   different answers.
+/* Fallback dot position per bucket, in the floor-plan SVG (viewBox 0 0 300 470).
+   Used only when a cat's specific spot has no entry in SPOT_POINTS below — a
+   new label in the form data, most likely. "On a lap" is the one bucket that
+   isn't a room; it's the living-room couch, kept separate because "which room"
+   and "on a person" are different answers.
    Only edit if you also move the <rect> shapes in cats.html. */
 const BUCKET_POINTS = {
   Bedroom: { x: 174, y: 68 },
@@ -36,6 +35,58 @@ const BUCKET_POINTS = {
   Office: { x: 200, y: 245 },
   "Living Room": { x: 66, y: 350 },
   "On a lap": { x: 148, y: 393 },
+};
+
+/* Where each *specific spot* sits. This is what the dots actually use, so a cat
+   predicted on the climbing wall is drawn on the climbing wall rather than in
+   the middle of the office.
+
+   Keys must match the tag strings in BUCKET_MAP (export_predictions.py) exactly
+   — a typo doesn't throw, it silently falls back to the room centroid. Values
+   are the centres of the <rect> shapes in cats.html; move a rect, move the
+   point.
+
+   Conventions, chosen once so they stay consistent:
+     - Bed: Paul on the left, Sarah on the right. Head = upper half, feet =
+       lower half, "under" and "between you both" = dead centre. Those last two
+       deliberately share a point with "on the bed"; all three are rare enough
+       that the overlap costs nothing.
+     - Couch: Paul's lap is the upper cushion, Sarah's the lower.
+     - Floor tags go to an empty part of the room, clear of every rect, so a
+       floor dot never looks like it's sitting on the furniture. */
+const SPOT_POINTS = {
+  // Bedroom — bed rect is x 140-208, y 21-114.
+  "by Paul's head": { x: 157, y: 44 },
+  "by Sarah's head": { x: 191, y: 44 },
+  "on Paul's feet": { x: 157, y: 91 },
+  "on Sarah's feet": { x: 191, y: 91 },
+  "on the bed": { x: 174, y: 68 },
+  "under the bed": { x: 174, y: 68 },
+  "between you both": { x: 174, y: 68 },
+  "on the bedroom floor": { x: 240, y: 48 },   // right of the bed, above the closet
+  "on the floor": { x: 240, y: 48 },           // unqualified "floor" buckets to Bedroom
+
+  // Bathroom.
+  "in the bathroom closet": { x: 143, y: 150 },
+
+  // Office.
+  "on Sarah's desk": { x: 183, y: 214 },
+  "on the green dresser": { x: 259, y: 214 },
+  "on Paul's desk": { x: 270, y: 262 },
+  "in the office closet": { x: 132, y: 240 },
+  "climbing wall": { x: 143, y: 292 },
+  "on the office floor": { x: 205, y: 256 },   // gap below the desks, right of the closet
+
+  // Living room — the kitchen table is furniture in here, not a room.
+  "cat tree": { x: 34, y: 419 },
+  "in the box": { x: 264, y: 325 },
+  floating: { x: 271, y: 381 },
+  "on the kitchen table": { x: 209, y: 393 },
+  "on the living room floor": { x: 86, y: 390 },  // left of the couch, above the tree
+
+  // On a lap — one cushion each.
+  "Paul's lap": { x: 148, y: 380 },
+  "Sarah's lap": { x: 148, y: 424 },
 };
 
 /* "in the office", but "on a lap" — the one bucket that isn't a room doesn't
@@ -554,12 +605,25 @@ function initFloorplan() {
     const now = new Date();
     statusEl.textContent = "";
 
+    // Resolve both cats first: the nudge below depends on whether they collide.
+    const tops = CAT_NAMES.map(function (name) {
+      return predict(name, now).ranked[0];
+    });
+    const points = tops.map(function (top) {
+      // Spot first, room only as a fallback — an unmapped tag lands somewhere
+      // vague rather than crashing on point.x.
+      return SPOT_POINTS[top.tag] || BUCKET_POINTS[top.bucket];
+    });
+    // Only separate the discs when they'd overlap. Applying the nudge
+    // unconditionally would shove a dot clean off the furniture it names —
+    // 13px is wider than half of most of these shapes.
+    const collide = points[0].x === points[1].x && points[0].y === points[1].y;
+
     CAT_NAMES.forEach(function (name, i) {
-      const top = predict(name, now).ranked[0];
-      const point = BUCKET_POINTS[top.bucket];
-      // Nudge so both cats stay readable when they're in the same place.
+      const top = tops[i];
+      const point = points[i];
       // Must exceed the circle radius (11) or the two discs merge into a blob.
-      const offset = i % 2 === 0 ? -13 : 13;
+      const offset = collide ? (i % 2 === 0 ? -13 : 13) : 0;
       document
         .getElementById("cat-" + i)
         .setAttribute("transform",
